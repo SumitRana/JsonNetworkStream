@@ -29,14 +29,12 @@ class DataStreamClient:
 	pas = None
 
 	def __init__(self,host="127.0.0.1",port=12301,encryption_key=None):
-		print "in cons ."
 		self.encdec_key = encryption_key
 		self.start_client(host,port)
 
 	def register_event_listener(self,listener_type="data-receiver",listener=None):
 		if listener_type == "data-receiver":
 			self.receiver = listener
-			print "registering user."
 		return 200
 
 	def remove_event_listener(self,listener_type):
@@ -46,22 +44,16 @@ class DataStreamClient:
 		return 200
 
 	def send_presence(self):
-		print "in send presence"
 		if self.is_online == True:
 			d = dict()
 			d['type'] = "presence"
 			d['username'] = str(self.user)
 			d['password'] = str(self.pas)
 			d['is_online'] = True
-			# if self.encdec_key is not None:
-			# 	self.stream.sendall(manual_encrypt(self.encdec_key,json.dumps(d),'AES',self.encdec_key))
-			# else:
-			# 	self.stream.sendall(json.dumps(d))
 			self.stream.sendall(json.dumps(d))
 		return 200
 
 	def send_message(self,to,data,**custom_data):
-		print "in send message"
 		core_data = { 'data': data }
 		d=dict()
 		d['type'] = "message"
@@ -71,13 +63,15 @@ class DataStreamClient:
 		d['time'] = str(dt.isoformat(dt.now()))
 		d.update(custom_data)
 		self.sending_data_queue.append(d)
-		# if self.encdec_key is not None:
-		# 	self.stream.sendall(manual_encrypt(self.encdec_key,json.dumps(d),'AES',self.encdec_key))
-		# else:
-		# 	print "sending .."
-		# 	print self.stream
-		# 	print d
-		self.stream.sendall(json.dumps(d))
+		if self.encdec_key is not None:
+			ed = manual_encrypt(self.encdec_key,str(json.dumps(core_data)),'AES',self.encdec_key)
+			base64_encoded_string = base64.encodestring(ed)
+			d['data'] = base64_encoded_string
+			self.stream.sendall(json.dumps(d))
+			# self.stream.sendall(manual_encrypt(self.encdec_key,json.dumps(d),'AES',self.encdec_key))
+		else:
+			self.stream.sendall(json.dumps(d))
+		# self.stream.sendall(json.dumps(d))
 		return 200
 
 	def receive(self):
@@ -87,10 +81,11 @@ class DataStreamClient:
 					r = str(self.stream.recv(1024))
 					try:
 						dump = json.loads(r)
-						print "in actual receiver >>"
-						# if self.encdec_key is not None:
-						# 	dd = manual_decrypt(self.encdec_key,dump["data"],'AES',self.encdec_key)
-						# dump["data"] = dd
+						if self.encdec_key is not None:
+							base64_decoded_string = base64.decodestring(dump['data'])
+							decrypted_string = manual_decrypt(self.encdec_key,base64_decoded_string,'AES',self.encdec_key)
+							dump["data"] = json.loads(decrypted_string)
+							# dd = manual_decrypt(self.encdec_key,dump["data"],'AES',self.encdec_key)
 						try:
 							self.receiver(dump)
 							continue
@@ -115,12 +110,9 @@ class DataStreamClient:
 
 	def start_client(self,host,port):
 		if self.stream is None:
-			print "creating stream"
 			self.stream = socket.socket()         # Create a socket object
 			self.port_address = port         # Reserve a port for your service.
 			self.host_address = host         # host to connect to
-			print port
-			print self.port_address
 			self.stream.connect((self.host_address, self.port_address))
 			try:
 				t1 = self.clientThread(context=self)

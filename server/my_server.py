@@ -70,17 +70,10 @@ class DataStreamServer:
 		while True:
 			try:
 				r = str(stream.recv(1024))
-				print r
-				print self.encdec_key
 				# if self.encdec_key is not None:
 				# 	r = manual_decrypt(self.encdec_key,r,"AES",self.encdec_key)
 				dump = json.loads(r)
-
-				print self.online_users
-				print self.online_users_username
-				if dump['type'] == "presence":
-					print "in presence"
-					
+				if dump['type'] == "presence":					
 					user_exist = False
 					with open(os.getcwd()+"/registered_users.pickle","r") as f:
 						self.users = pickle.load(f)
@@ -96,23 +89,15 @@ class DataStreamServer:
 						u = (stream ,dump['username'])
 						
 						if u not in self.online_users:
-							print "in u if"
 							self.online_users.append(u)
 							self.online_users_username.append(str(dump['username']))
 							#sending offline queue to user
-							print self.online_users_username
-							print self.online_users
 							with open(os.getcwd()+"/offline_user_data.pickle","r") as f:
 								self.offline_dump = pickle.load(f)
-							print "test 2"
 
 							for mes in self.offline_dump[str(dump["username"])]:
-								print "in mes"
 								stream.sendall(json.dumps(mes))
-							print "test 3"
-							print self.offline_dump
 							self.offline_dump[str(dump["username"])] = []
-							print "test 4"
 
 							with open(os.getcwd()+"/offline_user_data.pickle","w") as f:
 								pickle.dump(self.offline_dump,f)
@@ -127,31 +112,21 @@ class DataStreamServer:
 					self.register_user(username=dump['username'],password=dump['password'],name=dump['name'])
 
 				elif dump['type'] == "message":
-					print 'in message >'
 					if str(dump['to_user']) in self.online_users_username:#if 'to' is online
-						print "in if .."
 						for to_user_stream,username in self.online_users:
 							if username == dump['to_user']:
-								print "satisfied .."
 								to_user_stream.send(json.dumps(dump))
 					else:
-						print "in else"
 						with open(os.getcwd()+"/offline_user_data.pickle","r") as f:
 							self.offline_dump = pickle.load(f)
-						print "t1"
-						print self.offline_dump
 						try:
 							self.offline_dump[dump['to_user']].append(dump)
 						except Exception:
 							self.offline_dump[str(dump['to_user'])] = [dump]
-						print "t2"
 						with open(os.getcwd()+"/offline_user_data.pickle","w") as f:
 							pickle.dump(self.offline_dump,f)
-						print "t3"
 				
 			except Exception as e:#can be raised to kill client listening thread
-				print "in exception"
-				print e
 				break
 		return True
 
