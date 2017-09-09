@@ -3,24 +3,37 @@ Python library for making network stream communication following a 'json' based 
 Library provide client-server-client based communication , with additional option of peer to peer encryption.
 
 
-# Client side docs :
+## Client Side Docs :
 import client
 
-#Declare client object \n
-#port - port address ,host - ip address of server , encryption_key - 16 bit long string
+##### Declare client object 
+###### ( port - port address ,host - ip address of server , encryption_key - 16 bit long string )
 clientObject = client.DataStreamClient(host,port=12222,encryption_key)
 
-#register client \n
-clientObject.register_user(username,password,description)
+###### ( register client )
+clientObject.register_user(username,password,user_description)
 
-#login client \n
+##### ( login client )
 clientObject.login(username,password)
 
-#register listener - listener method is passed with data \n
+##### ( register listener - listener method is passed with data )
 clientObject.register_event_listener(listener=your_listener_method)
 
-#Send Message \n
+##### ( Send Message )
 clientObject.send_message(to=receiver_username,data=data_string,**optional_json_data_keys)
 
-#logout Client \n
+##### ( logout Client )
 clientObject.logout()
+
+## Server Side Docs :
+import server 
+
+##### Declare Server Object :
+###### ( server runs on the machine in which installed , using the port address specified )
+serverObject = server.DataStreamServer(port=12222)
+
+##### ( register client )
+serverObject.register_user(username,password,user_description)
+
+##### ( kill server )
+serverObject.stop_server()
