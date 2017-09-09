@@ -111,7 +111,7 @@ class DataStreamClient:
 	def start_client(self,host,port):
 		if self.stream is None:
 			self.stream = socket.socket()         # Create a socket object
-			self.port_address = port         # Reserve a port for your service.
+			self.port_address = int(port)         # Reserve a port for your service.
 			self.host_address = host         # host to connect to
 			self.stream.connect((self.host_address, self.port_address))
 			try:
@@ -124,19 +124,19 @@ class DataStreamClient:
 		return 200
 
 	def login(self,username,password):
-		self.user = username
-		self.pas = password
+		self.user = str(username)
+		self.pas = str(password)
 		self.is_online = True
 		self.send_presence()
 		return 200
 
 
-	def register_user(self,username,password,name):
+	def register_client(self,username,password,description=""):
 		d = dict()
 		d['type'] = "registration"
-		d['username'] = username
-		d['password'] = password
-		d['name'] = name
+		d['username'] = str(username)
+		d['password'] = str(password)
+		d['name'] = str(description)
 		self.stream.sendall(json.dumps(d))
 		return 200
 
