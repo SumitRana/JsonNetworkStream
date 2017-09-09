@@ -1,6 +1,6 @@
 # JsonNetworkStream
 Python library for making network stream communication following a 'json' based communication protocol .
-Library provide client-server-client based communication , with additional option of peer to peer encryption.
+Library provide client-server-client based communication , with additional option of peer to peer private key based encryption ( AES - Advanced Encryption Standard ).
 
 
 ## Client Side Docs :
@@ -37,3 +37,5 @@ serverObject.register_user(username,password,user_description)
 
 ##### ( kill server )
 serverObject.stop_server()
+
+* For adding peer to peer encryption of data , a 16-characters long string is shared privately by both the clients ( as it is private key based encryption ).
