@@ -1,7 +1,7 @@
 # JsonNetworkStream
 Python library for making network stream communication following a 'json' based communication protocol .
 
-#Client side docs - 
+# Client side docs - 
 
 message load protocol - json
 { "type": "message",
@@ -19,7 +19,7 @@ presence log
 
 
 
-#Server Side Docs - 
+# Server Side Docs - 
 
 
 message load protocol - json
@@ -44,7 +44,7 @@ registered users
 ]
 
 
-#Registration Protocol - 
+# Registration Protocol - 
 
 { "type": "registration",
   "username": "",
