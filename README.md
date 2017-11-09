@@ -11,7 +11,7 @@ import client
 clientObject = client.DataStreamClient(host,port=12222,encryption_key)
 
 ###### ( register client )
-clientObject.register_user(username,password,user_description)
+clientObject.register_client(username,password,user_description)
 
 ##### ( login client )
 clientObject.login(username,password)
