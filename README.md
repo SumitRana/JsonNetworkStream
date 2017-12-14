@@ -9,22 +9,22 @@ Library provide client-server-client based communication , with additional optio
 import client
 
 // Declare client object 
-// ( port - port address ,host - ip address of server , encryption_key - 16 bit long string )
+//  port - port address ,host - ip address of server , encryption_key - 16 bit long string 
 clientObject = client.DataStreamClient(host,port=12222,encryption_key)
 
-// ( register client )
+// register client 
 clientObject.register_client(username,password,user_description)
 
-// ( login client )
+// login client 
 clientObject.login(username,password)
 
-// ( register listener - listener method is passed with data )
+// register listener - listener method is passed with data 
 clientObject.register_event_listener(listener=your_listener_method)
 
-// ( Send Message )
+// Send Message 
 clientObject.send_message(to=receiver_username,data=data_string,**optional_json_data_keys)
 
-// ( logout Client )
+// logout Client 
 clientObject.logout()
 ```
 
@@ -34,13 +34,13 @@ clientObject.logout()
 import server 
 
 // Declare Server Object :
-// ( server runs on the machine in which installed , using the port address specified )
+// server runs on the machine in which installed , using the port address specified
 serverObject = server.DataStreamServer(port=12222)
 
-// ( register client )
+// register client
 serverObject.register_user(username,password,user_description)
 
-// ( kill server )
+// kill server
 serverObject.stop_server()
 ```
 
