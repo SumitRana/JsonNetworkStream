@@ -72,7 +72,10 @@ class DataStreamServer:
 				r = str(stream.recv(1024))
 				# if self.encdec_key is not None:
 				# 	r = manual_decrypt(self.encdec_key,r,"AES",self.encdec_key)
+				print r
+				print type(r)
 				dump = json.loads(r)
+
 				if dump['type'] == "presence":					
 					user_exist = False
 					with open(os.getcwd()+"/registered_users.pickle","r") as f:
@@ -125,9 +128,59 @@ class DataStreamServer:
 							self.offline_dump[str(dump['to_user'])] = [dump]
 						with open(os.getcwd()+"/offline_user_data.pickle","w") as f:
 							pickle.dump(self.offline_dump,f)
+				elif dump['type'] == "websocket_data":
+					print "web socket condition >"
+					print dump
+
 				
 			except Exception as e:#can be raised to kill client listening thread
-				break
+				print e
+				print r
+				
+				print type(r)
+				upgrade_client_headers = r.split("\r\n")
+				print str(r)
+
+				print upgrade_client_headers
+				print len(upgrade_client_headers)
+
+				WebSocket_key = ""
+
+				for header in upgrade_client_headers:
+					a = header.split(":")
+					if a[0].strip() == "Sec-WebSocket-Key":
+						WebSocket_key = a[1].strip()
+						break
+				print WebSocket_key
+				import hashlib
+				import base64
+				import binascii
+
+				try:
+					print "in try ----"
+					
+					print self.DecodedCharArrayFromByteStreamIn(r)
+					print "end -- try--"
+				except Exception:
+					pass
+
+
+				magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+				WebSocket_accept = base64.encodestring(hashlib.sha1(WebSocket_key+magic_string).digest())
+				print "websocket accept: "+WebSocket_accept
+
+				# 'Access-Control-Allow-Origin: http://websocket.org\r\n'\
+				# 'Server: Sam_Server\r\n'\
+				# 'Access-Control-Allow-Credentials: true\r\n'\
+				# 'Access-Control-Allow-Headers: content-type\r\n\r\n'
+
+				handshake_response_string = 'HTTP/1.1 101 WebSocket Protocol Handshake\r\n'\
+											'Date: Fri, 10 Feb 2012 17:38:18 GMT\r\n'\
+											'Connection: Upgrade\r\n'\
+											'Upgrade: WebSocket\r\n'\
+											'Sec-WebSocket-Accept: '+WebSocket_accept+'\r\n'											
+				stream.send(handshake_response_string)
+				# break
 		return True
 
 	# def send(self,stream):
@@ -141,6 +194,26 @@ class DataStreamServer:
 	# 			break
 	# 		stream.sendall(m+'\n')
 	# 	return True
+
+	def DecodedCharArrayFromByteStreamIn(self,stringStreamIn):
+	    #turn string values into opererable numeric byte values
+	    byteArray = [ord(character) for character in stringStreamIn]
+	    datalength = byteArray[1] & 127
+	    indexFirstMask = 2 
+	    if datalength == 126:
+	        indexFirstMask = 4
+	    elif datalength == 127:
+	        indexFirstMask = 10
+	    masks = [m for m in byteArray[indexFirstMask : indexFirstMask+4]]
+	    indexFirstDataByte = indexFirstMask + 4
+	    decodedChars = []
+	    i = indexFirstDataByte
+	    j = 0
+	    while i < len(byteArray):
+	        decodedChars.append( chr(byteArray[i] ^ masks[j % 4]) )
+	        i += 1
+	        j += 1
+	    return decodedChars
 
 	class serverThread(threading.Thread):
 		thread_stream = None
